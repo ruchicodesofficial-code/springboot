@@ -60,7 +60,7 @@ public class StudentServiceImpl implements StudentService{
         student.setLastName(dto.getLastName());
         student.setEmail(dto.getEmail());
         student.setPassword(dto.getPassword());
-        student.setCreatedAt(LocalDateTime.now());
+//        student.setCreatedAt(LocalDateTime.now());
         student.setDepartment(department);
         student.setCourses(courses);
         student.setAddress(address);
@@ -280,6 +280,10 @@ private void sendConfirmationEmail(){
         dto.setLastName(student.getLastName());
 
         dto.setEmail(student.getEmail());
+        dto.setCreatedAt(student.getCreatedAt());
+        dto.setUpdatedAt(student.getUpdatedAt());
+        dto.setCreatedBy(student.getCreatedBy());
+        dto.setLastModifiedBy(student.getLastModifiedBy());
         AddressResponseDTO addressDto = new AddressResponseDTO();
         addressDto.setCity(student.getAddress().getCity());
         addressDto.setState(student.getAddress().getState());
