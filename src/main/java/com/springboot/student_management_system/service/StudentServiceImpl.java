@@ -13,12 +13,15 @@ import com.springboot.student_management_system.repository.CourseRepository;
 import com.springboot.student_management_system.repository.DepartmentRepository;
 import com.springboot.student_management_system.repository.StudentRepository;
 import com.springboot.student_management_system.specification.StudentSpecification;
+import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,12 +29,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class StudentServiceImpl implements StudentService{
     private final StudentRepository studentRepository;
     private final DepartmentRepository departmentRepository;
     private final CourseRepository courseRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -59,34 +65,44 @@ public class StudentServiceImpl implements StudentService{
         student.setFirstName(dto.getFirstName());
         student.setLastName(dto.getLastName());
         student.setEmail(dto.getEmail());
-        student.setPassword(dto.getPassword());
+        student.setPassword(
+                passwordEncoder.encode(dto.getPassword()));
 //        student.setCreatedAt(LocalDateTime.now());
         student.setDepartment(department);
         student.setCourses(courses);
         student.setAddress(address);
         Student savedStudent = studentRepository.save(student);
-        try{
-        sendConfirmationEmail();}
-        catch (Exception e){
-            System.out.println(e.getMessage());
-        }
+//        try{
+//        sendConfirmationEmail();}
+//        catch (Exception e){
+//            log.error("Failed to send confirmation email ",e);
+//        }
         return mapToResponseDto(savedStudent);
     }
 private void sendConfirmationEmail(){
     throw new RuntimeException("Something went wrong!");
 }
+
     @Override
     public List<StudentResponseDto > getAllStudents() {
-        return studentRepository.findAllWithDetails()
+        log.info("===================Fetching all students===================");
+        List<StudentResponseDto> student = studentRepository.findAllWithDetails()
                 .stream()
                 .map(this::mapToResponseDto)
                 .collect(Collectors.toList());
+        log.info("Successfully fetched {} student",student.size());
+        return student;
     }
 
     @Override
     public StudentResponseDto  getStudentById(Long id) {
-        Student student = studentRepository.findById(id).orElseThrow(()->
-                new StudentNotFoundException("Student not found with id: "+id));
+        log.debug("Fetching student with id: {}",id);
+        Student student = studentRepository.findById(id)
+                .orElseThrow(()-> {
+                    log.warn("Student not found with id: {}", id);
+                    return new StudentNotFoundException("Student not found with id: " + id);
+                });
+        log.info("Student fetched successfully with id: {}",id);
         return mapToResponseDto(student);
     }
 
@@ -95,13 +111,26 @@ private void sendConfirmationEmail(){
         Student student = studentRepository.findById(id)
                 .orElseThrow(()->
                 new StudentNotFoundException("Student not found with id: "+id));
-        studentRepository.delete(student);
+        student.setDeleted(true);
+        studentRepository.save(student);
+    }
+    @Override
+    public void deleteStudentByEmail(String email) {
+        Student student = studentRepository.findByEmail(email).orElseThrow(()->
+                new StudentNotFoundException("Student not found with email: "+email));
+        student.setDeleted(true);
+        studentRepository.save(student);
     }
 
+     @Transactional
     @Override
     public StudentResponseDto  updateStudent(Long id, StudentRequestDto dto) {
-        Student existingStudent = studentRepository.findById(id).orElseThrow(()->
+        Student existingStudent = studentRepository.findById(id)
+                .orElseThrow(()->
                 new StudentNotFoundException("Student not found with id: "+id));
+        if(!existingStudent.getVersion().equals(dto.getVersion())){
+            throw new OptimisticLockException("Student was already updated by another user");
+        }
         //duplicate email check
         if (studentRepository.existsByEmail(dto.getEmail())&& !existingStudent.getEmail().equals(dto.getEmail())){
             throw new DuplicateEmailException("Student already exists with email: "+dto.getEmail());
@@ -110,19 +139,25 @@ private void sendConfirmationEmail(){
             existingStudent.setLastName(dto.getLastName());
             existingStudent.setEmail(dto.getEmail());
             existingStudent.setPassword(dto.getPassword());
-            Address address = existingStudent.getAddress();
-            if (address==null){
-                address= new Address();
+
+            if (dto.getAddress()!=null) {
+                Address address = existingStudent.getAddress();
+                if (address == null) {
+                    address = new Address();
+                }
+                address.setCity(dto.getAddress().getCity());
+                address.setState(dto.getAddress().getState());
+                address.setCountry(dto.getAddress().getCountry());
+                existingStudent.setAddress(address);
             }
-            address.setCity(dto.getAddress().getCity());
-        address.setState(dto.getAddress().getState());
-        address.setCountry(dto.getAddress().getCountry());
-        existingStudent.setAddress(address);
         Department department = departmentRepository.findById(dto.getDepartmentId())
                 .orElseThrow(()->
                         new ResourceNotFoundException("Department not found with id: "+dto.getDepartmentId()));
         existingStudent.setDepartment(department);
             Student updateStudent = studentRepository.save(existingStudent);
+
+            List<Course> courses = courseRepository.findAllById(dto.getCourseIds());
+            existingStudent.setCourses(courses);
             return mapToResponseDto(updateStudent);
     }
 
@@ -193,10 +228,7 @@ private void sendConfirmationEmail(){
         return studentRepository.countStudentByCourse(courseName);
     }
 
-    @Override
-    public void deleteStudentByEmail(String email) {
-        studentRepository.deleteByEmail(email);
-    }
+
 
     @Override
     public List<StudentResponseDto> getStudentByFirstNameAndCourse(String firstName, String course) {
@@ -284,6 +316,7 @@ private void sendConfirmationEmail(){
         dto.setUpdatedAt(student.getUpdatedAt());
         dto.setCreatedBy(student.getCreatedBy());
         dto.setLastModifiedBy(student.getLastModifiedBy());
+
         AddressResponseDTO addressDto = new AddressResponseDTO();
         addressDto.setCity(student.getAddress().getCity());
         addressDto.setState(student.getAddress().getState());
@@ -302,6 +335,7 @@ private void sendConfirmationEmail(){
                                 course.getInstructorName()
                         )).toList()
         );
+        dto.setVersion(student.getVersion()) ;
         return dto;
     }
 }

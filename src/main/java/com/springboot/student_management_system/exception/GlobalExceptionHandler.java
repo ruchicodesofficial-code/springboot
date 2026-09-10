@@ -2,7 +2,9 @@ package com.springboot.student_management_system.exception;
 
 import com.springboot.student_management_system.payload.ApiResponse;
 import com.springboot.student_management_system.payload.ErrorResponse;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,12 +15,13 @@ import javax.management.ObjectName;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
   @ExceptionHandler(StudentNotFoundException.class)
   public ResponseEntity<ApiResponse<Object>> handleStudentNotFoundException(StudentNotFoundException
                                                                       ex, HttpServletRequest request){
+      log.warn("Student not found: {}",ex.getMessage());
     ApiResponse <Object> response = new ApiResponse<>(
             false,
             LocalDateTime.now(),
@@ -61,5 +64,18 @@ public class GlobalExceptionHandler {
             errors
     );
     return new ResponseEntity<>(response,HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(OptimisticLockException.class)
+  public ResponseEntity<ApiResponse<Object>> handleOptimisticLockException(OptimisticLockException ex, HttpServletRequest request){
+      ApiResponse<Object> response = new ApiResponse<>(
+              false,
+              LocalDateTime.now(),
+              HttpStatus.CONTINUE.value(),
+              "Student was already updated by another user",
+              null
+
+      );
+      return new ResponseEntity<>(response,HttpStatus.CONFLICT);
   }
 }

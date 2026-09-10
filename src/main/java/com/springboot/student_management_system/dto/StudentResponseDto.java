@@ -18,6 +18,7 @@ public class StudentResponseDto {
     private LocalDateTime updatedAt;
     private String createdBy;
     private String lastModifiedBy;
+    private Long version;
 
 
 

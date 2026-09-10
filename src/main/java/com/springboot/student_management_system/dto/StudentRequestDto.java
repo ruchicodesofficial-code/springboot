@@ -30,4 +30,6 @@ public class StudentRequestDto {
     private Long departmentId;
     @NotEmpty(message = "At least one course is required")
     private List<Long> courseIds;
+
+    private Long version;
 }

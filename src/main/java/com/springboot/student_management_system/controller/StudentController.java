@@ -206,5 +206,11 @@ public List<StudentResponseDto> getAllStudentCustom(){
 public List<StudentResponseDto> getStudentByDepartmentCustom(@RequestParam  String departmentName){
         return studentService.getStudentByDepartmentCustom(departmentName);
 }
+
+//@GetMapping("/header")
+//public ResponseEntity<String> getClientVersion(
+//        @RequestHeader("X-Client-Version") String version){
+//        return ResponseEntity.ok("Client version:"+version);
+//}
 }
 
