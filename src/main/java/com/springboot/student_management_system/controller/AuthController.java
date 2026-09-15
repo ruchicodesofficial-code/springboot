@@ -2,35 +2,36 @@ package com.springboot.student_management_system.controller;
 
 import com.springboot.student_management_system.dto.LoginRequest;
 import com.springboot.student_management_system.dto.LoginResponse;
-import com.springboot.student_management_system.security.JwtService;
+import com.springboot.student_management_system.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final AuthenticationManager authenticationManager;
-    private final JwtService jwtService;
+    private final AuthenticationService authenticationService;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request){
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
+        return ResponseEntity.ok(
+                authenticationService.login(request)
         );
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String token = jwtService.generateToken(userDetails);
-        return ResponseEntity.ok(new LoginResponse(token));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<LoginResponse> refreshToken(@RequestParam
+                                                      String refreshToken){
+        return ResponseEntity.ok(
+                authenticationService.refreshToken(refreshToken));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestParam String refreshToken){
+        authenticationService.logout(refreshToken);
+        return ResponseEntity.ok(
+                "Logout Successful!"
+        );
     }
 }

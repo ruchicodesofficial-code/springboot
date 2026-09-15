@@ -138,7 +138,7 @@ private void sendConfirmationEmail(){
             existingStudent.setFirstName(dto.getFirstName());
             existingStudent.setLastName(dto.getLastName());
             existingStudent.setEmail(dto.getEmail());
-            existingStudent.setPassword(dto.getPassword());
+            existingStudent.setPassword(passwordEncoder.encode(dto.getPassword()));
 
             if (dto.getAddress()!=null) {
                 Address address = existingStudent.getAddress();
@@ -178,7 +178,7 @@ private void sendConfirmationEmail(){
                 existingStudent.setEmail(dto.getEmail());
             }
             if(dto.getPassword()!=null){
-                existingStudent.setPassword(dto.getPassword());
+                existingStudent.setPassword(passwordEncoder.encode(dto.getPassword()));
             }
             if (dto.getAddress()!=null){
                 Address address = getAddress(dto, existingStudent);

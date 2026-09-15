@@ -1,6 +1,8 @@
 package com.springboot.student_management_system.config;
 
 import com.springboot.student_management_system.security.JwtAuthenticationFilter;
+import com.springboot.student_management_system.security.RestAccessDeniedHandler;
+import com.springboot.student_management_system.security.RestAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +24,8 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final RestAccessDeniedHandler restAccessDeniedHandler;
 
 
     //security configuration
@@ -31,9 +35,18 @@ public class SecurityConfig {
                 .csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(auth->
                         auth
+                                //swagger/openApi
+                                .requestMatchers(
+                                        "/swagger-ui/**",
+                                        "/swagger-ui.html",
+                                        "/v3/api-docs/**"
+                                ).permitAll()
 
+                                //Authentication API
                                 //Get-> USER + ADMIN
-                                .requestMatchers("/auth/login")
+                                .requestMatchers("/auth/login",
+                                        "/auth/refresh",
+                                        "/auth/logout")
                                 .permitAll()
 
                                 .requestMatchers(HttpMethod.GET,
@@ -58,6 +71,10 @@ public class SecurityConfig {
                                 .anyRequest()
                                 .authenticated()
                 )
+                .exceptionHandling(exception->
+                        exception
+                                .authenticationEntryPoint(restAuthenticationEntryPoint)
+                                .accessDeniedHandler(restAccessDeniedHandler))
                 .sessionManagement(session->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
