@@ -11,11 +11,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -294,6 +298,60 @@ public List<StudentResponseDto> getAllStudentCustom(){
 @GetMapping("/custom/depart")
 public List<StudentResponseDto> getStudentByDepartmentCustom(@RequestParam  String departmentName){
         return studentService.getStudentByDepartmentCustom(departmentName);
+}
+
+@Operation(summary = "Upload student profile image",
+description = "Uploads a JPG or PNG profile image for a student")
+@ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200",
+                description = "Profile image uploaded successfully"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode ="404",
+                description = "Invalid file, unsupported file type, or file size exceeds the limit"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode ="404",
+                description = "Student not found"
+        )
+})
+@SecurityRequirement(name="bearerAuth")
+@PostMapping(
+        value = "/{id}/image",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+public ResponseEntity<StudentResponseDto> uploadProfileImage(@PathVariable Long id,
+                                                             @RequestParam("file") MultipartFile file){
+
+        return ResponseEntity.ok(
+                studentService.uploadProfileImage(id,file)
+        );
+}
+
+@Operation(
+        summary = "Download student profile image",
+        description = "Downloads the profile image of a student using the student ID"
+)
+@ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200",
+                description = "Profile image downloaded successfully"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode ="404",
+                description = "Student or profile image not found"
+        )
+})
+@SecurityRequirement(name = "bearerAuth")
+@GetMapping("/{id}/image")
+public ResponseEntity<Resource> downloadProfileImage(@PathVariable Long id){
+        Resource resource = studentService.downloadProfileImage(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment;filename=\"" +
+                                resource.getFilename()+"\"")
+                .body(resource);
 }
 
 //@GetMapping("/header")

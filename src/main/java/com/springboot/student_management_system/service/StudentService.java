@@ -5,9 +5,11 @@ import com.springboot.student_management_system.dto.StudentRequestDto;
 import com.springboot.student_management_system.dto.StudentResponseDto;
 import com.springboot.student_management_system.entity.Student;
 import com.springboot.student_management_system.projection.StudentProjection;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -31,5 +33,6 @@ public interface StudentService {
     List<StudentResponseDto> searchStudents(String firstName,String email,String courses);
     List<StudentResponseDto> getAllStudentCustom();
     List<StudentResponseDto> getStudentByDepartmentCustom(String  departmentName);
-
+    StudentResponseDto uploadProfileImage(Long id, MultipartFile file);
+    Resource downloadProfileImage(Long id);
 }

@@ -19,6 +19,7 @@ public class StudentResponseDto {
     private String createdBy;
     private String lastModifiedBy;
     private Long version;
+    private String profileImage;
 
 
 

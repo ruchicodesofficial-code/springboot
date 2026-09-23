@@ -46,7 +46,9 @@ public class SecurityConfig {
                                 //Get-> USER + ADMIN
                                 .requestMatchers("/auth/login",
                                         "/auth/refresh",
-                                        "/auth/logout")
+                                        "/auth/logout",
+                                        "/auth/otp/send",
+                                        "/auth/otp/verify")
                                 .permitAll()
 
                                 .requestMatchers(HttpMethod.GET,

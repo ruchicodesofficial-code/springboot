@@ -16,6 +16,7 @@ import com.springboot.student_management_system.specification.StudentSpecificati
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +25,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +41,7 @@ public class StudentServiceImpl implements StudentService{
     private final DepartmentRepository departmentRepository;
     private final CourseRepository courseRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FileStorageService fileStorageService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -304,14 +308,59 @@ private void sendConfirmationEmail(){
                 .toList();
     }
 
+    @Override
+    @Transactional
+    public StudentResponseDto uploadProfileImage(Long id, MultipartFile file) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(()->
+                new StudentNotFoundException("Student not found with id: "+id));
+        //validation
+        if (file.isEmpty()){
+            throw new IllegalArgumentException("File cannot be empty");
+        }
+        String contentType = file.getContentType();
+        if (!"image/jpeg".equals(contentType)&& !"image/png".equals(contentType)){
+            throw new IllegalArgumentException("only JPG and PNG images are allowed");
+        }
+        if (file.getSize()>5*1024*1024){
+            throw new IllegalArgumentException("File size must be less than 5 MB");
+        }
+        try{
+            String fileName = fileStorageService.storeFile(file);
+            student.setProfileImage(fileName);
+            Student updatedStudent= studentRepository.save(student);
+            return mapToResponseDto(updatedStudent);
+        }catch (IOException e){
+            throw new RuntimeException("Failed to store profile image",e);
+        }
+    }
+
+    @Override
+    public Resource downloadProfileImage(Long id) {
+       Student student = studentRepository.findById(id)
+               .orElseThrow(()->
+                       new StudentNotFoundException("Student not found with id: "+id));
+       String fileName = student.getProfileImage();
+
+       if (fileName==null||fileName.isBlank()){
+           throw new ResourceNotFoundException("Profile image not found for student with id: "+id);
+
+       }
+       try {
+           return fileStorageService.loadFileAsResource(fileName);
+       }catch(IOException e){
+           throw new ResourceNotFoundException("Profile image file not found: "+fileName);
+       }
+    }
+
 
     private StudentResponseDto mapToResponseDto(Student student){
         StudentResponseDto dto = new StudentResponseDto();
         dto.setId(student.getId());
         dto.setFirstName(student.getFirstName());
         dto.setLastName(student.getLastName());
-
         dto.setEmail(student.getEmail());
+        dto.setProfileImage(student.getProfileImage());
         dto.setCreatedAt(student.getCreatedAt());
         dto.setUpdatedAt(student.getUpdatedAt());
         dto.setCreatedBy(student.getCreatedBy());

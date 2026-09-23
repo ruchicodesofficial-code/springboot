@@ -1,7 +1,6 @@
 package com.springboot.student_management_system.service;
 
-import org.springframework.stereotype.Component;
 
-@Component
-public class EmailService {
+public interface EmailService {
+    void sendOtpEmail(String toEmail,String otp);
 }

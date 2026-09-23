@@ -1,7 +1,6 @@
 package com.springboot.student_management_system.exception;
 
 import com.springboot.student_management_system.payload.ApiResponse;
-import com.springboot.student_management_system.payload.ErrorResponse;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import javax.management.ObjectName;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +29,21 @@ public class GlobalExceptionHandler {
 
     return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
   }
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<ApiResponse<Object>> handleResourceNotFoundException(
+          ResourceNotFoundException ex,HttpServletRequest request){
+      log.warn("Resource not found: {}",ex.getMessage());
+      ApiResponse<Object> response = new ApiResponse<>(
+              false,
+              LocalDateTime.now(),
+              HttpStatus.NOT_FOUND.value(),
+              ex.getMessage(),
+              null
+              );
+      return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+  }
+
   @ExceptionHandler(DuplicateEmailException.class)
   public ResponseEntity<ApiResponse<Object>> handleDuplicateEmailException(DuplicateEmailException ex,HttpServletRequest request){
     ApiResponse<Object> response = new ApiResponse<>(
@@ -71,7 +83,7 @@ public class GlobalExceptionHandler {
       ApiResponse<Object> response = new ApiResponse<>(
               false,
               LocalDateTime.now(),
-              HttpStatus.CONTINUE.value(),
+              HttpStatus.CONFLICT.value(),
               "Student was already updated by another user",
               null
 

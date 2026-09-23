@@ -73,4 +73,7 @@ public class Student {
     @Version
     private Long version;
 
+    @Column(name="profile_image")
+    private String profileImage;
+
 }
