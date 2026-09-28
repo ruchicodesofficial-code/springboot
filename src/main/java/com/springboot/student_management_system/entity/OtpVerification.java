@@ -20,6 +20,7 @@ public class OtpVerification {
     private String otp;
     private LocalDateTime expiresAt;
     private  boolean verified;
+    private int attempts=0;
 
 
 }

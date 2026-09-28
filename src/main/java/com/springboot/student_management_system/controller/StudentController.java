@@ -30,6 +30,7 @@ import java.util.List;
         name= "Student Apis",
         description = "APIs for managing students"
 )
+@SecurityRequirement(name = "bearerAuth")
 public class StudentController {
 private final StudentService studentService;
 
@@ -71,6 +72,7 @@ private final StudentService studentService;
             summary = "Get Student by ID",
             description = "Retrieves a student using the student ID"
     )
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<StudentResponseDto>> getStudentById(@Parameter(description = "Student ID",
     required = true) @PathVariable Long id){

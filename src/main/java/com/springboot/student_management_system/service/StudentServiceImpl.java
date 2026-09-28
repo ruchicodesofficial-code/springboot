@@ -16,6 +16,9 @@ import com.springboot.student_management_system.specification.StudentSpecificati
 import jakarta.persistence.OptimisticLockException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -98,6 +101,7 @@ private void sendConfirmationEmail(){
         return student;
     }
 
+    @Cacheable(value = "students",key = "#id")
     @Override
     public StudentResponseDto  getStudentById(Long id) {
         log.debug("Fetching student with id: {}",id);
@@ -110,6 +114,8 @@ private void sendConfirmationEmail(){
         return mapToResponseDto(student);
     }
 
+//    @CacheEvict(value = "students",allEntries = true)
+    @CacheEvict(value = "students",key = "#id")
     @Override
     public void deleteStudent(Long id) {
         Student student = studentRepository.findById(id)
@@ -118,6 +124,7 @@ private void sendConfirmationEmail(){
         student.setDeleted(true);
         studentRepository.save(student);
     }
+
     @Override
     public void deleteStudentByEmail(String email) {
         Student student = studentRepository.findByEmail(email).orElseThrow(()->
@@ -126,7 +133,9 @@ private void sendConfirmationEmail(){
         studentRepository.save(student);
     }
 
-     @Transactional
+
+    @CachePut(value = "students",key = "#id")
+    @Transactional
     @Override
     public StudentResponseDto  updateStudent(Long id, StudentRequestDto dto) {
         Student existingStudent = studentRepository.findById(id)
@@ -165,6 +174,8 @@ private void sendConfirmationEmail(){
             return mapToResponseDto(updateStudent);
     }
 
+
+    @CachePut(value = "students",key = "#id")
     @Override
     public StudentResponseDto patchStudent(Long id, StudentRequestDto dto) {
         Student existingStudent = studentRepository.findById(id).orElseThrow(()->
