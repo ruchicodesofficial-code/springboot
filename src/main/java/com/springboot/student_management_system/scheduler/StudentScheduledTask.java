@@ -14,11 +14,11 @@ public class StudentScheduledTask {
 
 //      @Scheduled(fixedRate = 10000)
       //@Scheduled(fixedDelay = 10000)
-    @Scheduled(cron = "*/10 * * * * *")
-    public void printStudentCount(){
-        long studentCount = studentRepository.count();
-        log.info("Scheduled Task: Total students = {} ",studentCount);
-
-    }
+//    @Scheduled(cron = "*/10 * * * * *")
+//    public void printStudentCount(){
+//        long studentCount = studentRepository.count();
+//        log.info("Scheduled Task: Total students = {} ",studentCount);
+//
+//    }
 
 }
