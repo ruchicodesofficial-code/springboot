@@ -21,9 +21,18 @@ import java.util.List;
 public class DepartmentController {
     private final DepartmentService departmentService;
     @PostMapping
-    public ResponseEntity<ApiResponse<DepartmentResponseDto>> createDepartment(@Valid
-                                                     @RequestBody DepartmentRequestDto requestDto){
-        DepartmentResponseDto response = departmentService.createDepartment(requestDto);
+    public ResponseEntity<ApiResponse<DepartmentResponseDto>> createDepartment(
+            @Valid @RequestBody DepartmentRequestDto requestDto) {
+
+        System.out.println(">>> CREATE DEPARTMENT CONTROLLER CALLED: "
+                + requestDto.getDepartmentName());
+
+        DepartmentResponseDto response =
+                departmentService.createDepartment(requestDto);
+
+        System.out.println(">>> DEPARTMENT CREATED: "
+                + response.getDepartmentName());
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(
                         true,
@@ -32,7 +41,6 @@ public class DepartmentController {
                         "Department created successfully",
                         response
                 ));
-
     }
     @GetMapping
     public ResponseEntity<ApiResponse<List<DepartmentResponseDto>>> getAllDepartments(){
