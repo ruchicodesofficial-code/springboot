@@ -51,27 +51,25 @@ public class SecurityConfig {
                                         "/auth/otp/verify")
                                 .permitAll()
 
-                                .requestMatchers(HttpMethod.GET,
-                                        "/api/students/**")
-                                .hasAnyRole("USER","ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/students/**").hasAnyRole("USER","ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/students/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/students/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PATCH, "/api/students/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/students/**").hasRole("ADMIN")
 
-                                .requestMatchers(HttpMethod.POST,
-                                        "/api/students/**")
-                                .hasRole("ADMIN")
+                                //department API rules
+                                .requestMatchers(HttpMethod.GET,"/api/departments/**").hasAnyRole("USER","ADMIN")
+                                .requestMatchers(HttpMethod.POST,"/api/departments/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT,"/api/departments/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE,"/api/departments/**").hasRole("ADMIN")
 
-                                .requestMatchers(HttpMethod.PUT,
-                                        "/api/students/**")
-                                .hasRole("ADMIN")
+                                //Course API rules
+                                .requestMatchers(HttpMethod.GET, "/api/courses/**").hasAnyRole("USER", "ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/courses/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/courses/**").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/courses/**").hasRole("ADMIN")
 
-                                .requestMatchers(HttpMethod.PATCH,
-                                        "/api/students/**")
-                                .hasRole("ADMIN")
-
-                                .requestMatchers(HttpMethod.DELETE,
-                                        "/api/students/**")
-                                .hasRole("ADMIN")
-                                .anyRequest()
-                                .authenticated()
+                                .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception->
                         exception
