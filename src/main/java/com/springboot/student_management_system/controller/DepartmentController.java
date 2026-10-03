@@ -4,6 +4,7 @@ import com.springboot.student_management_system.dto.DepartmentRequestDto;
 import com.springboot.student_management_system.dto.DepartmentResponseDto;
 import com.springboot.student_management_system.payload.ApiResponse;
 import com.springboot.student_management_system.service.DepartmentService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/departments")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class DepartmentController {
     private final DepartmentService departmentService;
     @PostMapping
