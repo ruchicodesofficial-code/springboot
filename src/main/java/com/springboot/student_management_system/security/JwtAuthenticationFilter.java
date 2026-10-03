@@ -35,8 +35,11 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
             username= jwtService.extractUsername(jwtToken);
 
         }catch (Exception e){
-           response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-           return;
+            System.out.println("JWT validation failed: " + e.getMessage());
+            e.printStackTrace();
+
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
         }
         if (username!=null &&
                 SecurityContextHolder.getContext()
@@ -56,9 +59,11 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                 );
                 SecurityContextHolder.getContext()
                         .setAuthentication(authentication);
-            }else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return;
+            }
+            else {
+            System.out.println("JWT token is invalid.");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
             }
         }
         filterChain.doFilter(request,response);
