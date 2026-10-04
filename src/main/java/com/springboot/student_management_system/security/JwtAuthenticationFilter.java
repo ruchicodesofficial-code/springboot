@@ -61,6 +61,14 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                 SecurityContextHolder.getContext()
                         .setAuthentication(authentication);
                 System.out.println("Authentication set successfully");
+                System.out.println("Username: " +
+                        SecurityContextHolder.getContext()
+                                .getAuthentication()
+                                .getName());
+                System.out.println("Authorities: " +
+                        SecurityContextHolder.getContext()
+                                .getAuthentication()
+                                .getAuthorities());
             }
             else {
             System.out.println("JWT token is invalid.");
