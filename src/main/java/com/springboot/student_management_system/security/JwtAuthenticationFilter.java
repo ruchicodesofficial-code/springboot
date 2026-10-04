@@ -45,6 +45,7 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                 SecurityContextHolder.getContext()
                         .getAuthentication()==null){
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            System.out.println("Validating JWT for: " + username);
             if (jwtService.isTokenValid(
                     jwtToken,userDetails
             )){
@@ -59,6 +60,7 @@ public class JwtAuthenticationFilter  extends OncePerRequestFilter {
                 );
                 SecurityContextHolder.getContext()
                         .setAuthentication(authentication);
+                System.out.println("Authentication set successfully");
             }
             else {
             System.out.println("JWT token is invalid.");
