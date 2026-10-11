@@ -69,6 +69,9 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.PUT, "/api/courses/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/api/courses/**").hasRole("ADMIN")
 
+                                .requestMatchers("/actuator/health").permitAll()
+                                .requestMatchers("/actuator/info","/actuator/metrics","/actuator/metrics/**").hasRole("ADMIN")
+
                                 .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception->
