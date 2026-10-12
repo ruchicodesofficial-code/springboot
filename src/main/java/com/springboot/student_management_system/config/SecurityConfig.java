@@ -51,7 +51,9 @@ public class SecurityConfig {
                                         "/auth/otp/verify")
                                 .permitAll()
 
-                                .requestMatchers(HttpMethod.GET, "/api/students/**").hasAnyRole("USER","ADMIN")
+                                .requestMatchers("/actuator/prometheus").permitAll()
+
+                                .requestMatchers(HttpMethod.GET, "/api/students","/api/students/**").hasAnyRole("USER","ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/students/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/api/students/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.PATCH, "/api/students/**").hasRole("ADMIN")
