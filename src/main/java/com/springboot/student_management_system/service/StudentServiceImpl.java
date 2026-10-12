@@ -376,25 +376,36 @@ private void sendConfirmationEmail(){
         dto.setUpdatedAt(student.getUpdatedAt());
         dto.setCreatedBy(student.getCreatedBy());
         dto.setLastModifiedBy(student.getLastModifiedBy());
-
+if (student.getAddress()!=null){
         AddressResponseDTO addressDto = new AddressResponseDTO();
         addressDto.setCity(student.getAddress().getCity());
         addressDto.setState(student.getAddress().getState());
         addressDto.setCountry(student.getAddress().getCountry());
-         dto.setAddress(addressDto);
-        dto.setDepartmentName(student.getDepartment().getDepartmentName());
-        dto.setCourses(
-                student.getCourses()
-                        .stream()
-                        .map(course -> new
-                                CourseResponseDTO(
-                                        course.getId(),
-                                course.getCourseName(),
-                                course.getDuration(),
-                                course.getFees(),
-                                course.getInstructorName()
-                        )).toList()
-        );
+         dto.setAddress(addressDto);}
+else{
+    dto.setAddress(null);
+}
+if(student.getDepartment()!=null){
+        dto.setDepartmentName(student.getDepartment().getDepartmentName());}
+else {
+    dto.setDepartmentName(null);
+}
+if (student.getCourses()!=null) {
+    dto.setCourses(
+            student.getCourses()
+                    .stream()
+                    .map(course -> new
+                            CourseResponseDTO(
+                            course.getId(),
+                            course.getCourseName(),
+                            course.getDuration(),
+                            course.getFees(),
+                            course.getInstructorName()
+                    )).toList()
+    );
+}else{
+    dto.setCourses(List.of());
+}
         dto.setVersion(student.getVersion()) ;
         return dto;
     }

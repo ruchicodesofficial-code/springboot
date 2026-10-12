@@ -1,5 +1,6 @@
 package com.springboot.student_management_system.config;
 
+import com.springboot.student_management_system.entity.Address;
 import com.springboot.student_management_system.entity.Student;
 import com.springboot.student_management_system.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,12 @@ public class AdminDataInitializer implements CommandLineRunner {
             System.out.println("Admin already exists.");
             return;
         }
+
+        Address address = new Address();
+        address.setCity("Ujjain");
+        address.setState("Madhya Pradesh");
+        address.setCountry("India");
+        studentRepository.save(address.getStudent());
         Student admin = new Student();
         admin.setFirstName("Admin");
         admin.setLastName("User");
